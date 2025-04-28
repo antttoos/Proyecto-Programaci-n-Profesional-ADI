@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
+import { toast, Toaster } from 'react-hot-toast';
 
 export default function HomeLayout({ children }) {
   const [comuna, setComuna] = useState('');
@@ -38,13 +39,17 @@ export default function HomeLayout({ children }) {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    router.push('/login');
+    toast.success('Sesión cerrada exitosamente.', { duration: 3000 });
+
+    setTimeout(() => {
+      localStorage.removeItem('token');
+      router.push('/login');
+    }, 3000);
   };
 
   return (
     <>
-      {/* Header */}
+      <Toaster position="top-center" />
       <header className="header">
         <div className="container">
           <div className="brand">
@@ -55,7 +60,6 @@ export default function HomeLayout({ children }) {
           </div>
 
           <div className="actions">
-            {/* Selector de comuna */}
             <div className="action-dropdown">
               <span className="icon">📍</span>
               <select
@@ -71,11 +75,10 @@ export default function HomeLayout({ children }) {
               <span className="caret">▾</span>
             </div>
 
-            {/* Dropdown de cuenta */}
             <div className="action-dropdown" ref={menuRef}>
               <button
                 className="action-button"
-                onClick={() => setMenuOpen((open) => !open)}
+                onClick={() => setMenuOpen(open => !open)}
               >
                 <span className="icon">👤</span>
                 <span>{isLoggedIn && userEmail ? userEmail.slice(0, 7) : 'Mi cuenta'}</span>
@@ -85,26 +88,15 @@ export default function HomeLayout({ children }) {
               {menuOpen && (
                 <div className="dropdown-menu">
                   {isLoggedIn ? (
-                    <button
-                      onClick={handleLogout}
-                      className="dropdown-item"
-                    >
+                    <button onClick={handleLogout} className="dropdown-item">
                       Cerrar sesión
                     </button>
                   ) : (
                     <>
-                      <Link
-                        href="/login"
-                        className="dropdown-item"
-                        onClick={() => setMenuOpen(false)}
-                      >
+                      <Link href="/login" className="dropdown-item" onClick={() => setMenuOpen(false)}>
                         Iniciar sesión
                       </Link>
-                      <Link
-                        href="/register"
-                        className="dropdown-item"
-                        onClick={() => setMenuOpen(false)}
-                      >
+                      <Link href="/register" className="dropdown-item" onClick={() => setMenuOpen(false)}>
                         Registrarse
                       </Link>
                     </>
@@ -116,15 +108,12 @@ export default function HomeLayout({ children }) {
         </div>
       </header>
 
-      {/* Main */}
       <main className="main">{children}</main>
 
-      {/* Footer */}
       <footer className="footer">
         © 2025 Comparador de Precios de Medicamentos
       </footer>
 
-      {/* CSS igual que tú tenías */}
       <style jsx>{`
         :global(body) {
           margin: 0;

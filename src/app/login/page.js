@@ -1,60 +1,67 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { toast, Toaster } from 'react-hot-toast';
 
 export default function LoginPage() {
-  const [email, setEmail]       = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError]       = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      localStorage.setItem('token', data.token);
-      router.push('/');
-    } else {
-      setError(data.error);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      setIsLoading(false);
+
+        if (res.ok) {
+          localStorage.setItem('token', data.token);
+          toast.success('Inicio de sesión exitoso. ¡Bienvenido!', { duration: 4000 });
+          setTimeout(() => {
+            router.push('/');
+          }, 4000);
+        } else {
+          toast.error(data.error || 'Error al iniciar sesión');
+        }
+    } catch (error) {
+      setIsLoading(false);
+      toast.error('Error inesperado. Intenta nuevamente.');
     }
   };
 
   return (
     <div className="container">
+      <Toaster position="top-center" />
       <div className="card">
-        <h1>Iniciar Sesión</h1>
-        <p>¡Bienvenido!</p>
+        <h1>Iniciar sesión</h1>
         <form onSubmit={handleSubmit} className="form">
           <input
             type="email"
-            placeholder="Email"
+            placeholder="Correo electrónico"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
           <input
             type="password"
             placeholder="Contraseña"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
-          {error && <p className="error">{error}</p>}
-          <button type="submit">Ingresar</button>
+          <button type="submit" disabled={isLoading}>
+            {isLoading ? 'Cargando...' : 'Iniciar sesión'}
+          </button>
         </form>
-
-        <p className="forgot">
-          ¿Olvidaste tu contraseña?{' '}
-          <Link href="/forgot-password">
-            <span className="link">Recupera tu cuenta</span>
-          </Link>
-        </p>
       </div>
 
       <style jsx>{`
@@ -76,13 +83,9 @@ export default function LoginPage() {
           width: 100%;
         }
         h1 {
-          margin-bottom: 8px;
+          margin-bottom: 16px;
           font-size: 2rem;
           color: #047857;
-        }
-        p {
-          margin-bottom: 24px;
-          color:black;
         }
         .form {
           display: flex;
@@ -94,7 +97,6 @@ export default function LoginPage() {
           border: 1px solid #d1d5db;
           border-radius: 8px;
           font-size: 1rem;
-          color: black;
         }
         button {
           background: #047857;
@@ -109,22 +111,6 @@ export default function LoginPage() {
         }
         button:hover {
           background: #065f46;
-        }
-        .error {
-          color: red;
-          font-size: 0.9rem;
-        }
-        .forgot {
-          margin-top: 16px;
-          font-size: 0.9rem;
-        }
-        .link {
-          color: #3b82f6;
-          cursor: pointer;
-          font-weight: 600;
-        }
-        .link:hover {
-          text-decoration: underline;
         }
       `}</style>
     </div>

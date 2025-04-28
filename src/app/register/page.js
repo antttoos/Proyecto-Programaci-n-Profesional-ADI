@@ -1,55 +1,66 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast, Toaster } from 'react-hot-toast';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
+      setIsLoading(false);
 
-    if (res.ok) {
-      localStorage.setItem('token', data.token);
-
-      router.push('/');
-    } else {
-      setError(data.error || 'Registration failed');
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        toast.success('Cuenta creada exitosamente. ¡Bienvenido!', { duration: 4000 });
+        setTimeout(() => {
+          router.push('/');
+        }, 4000);
+      } else {
+        toast.error(data.error || 'Error al registrarse');
+      }
+    } catch (error) {
+      setIsLoading(false);
+      toast.error('Error inesperado. Intenta nuevamente.');
     }
   };
 
   return (
     <div className="container">
+      <Toaster position="top-center" />
       <div className="card">
-        <h1>Crear Cuenta</h1>
-        <p>Registrate para saber más en AD AhorraMeds</p>
+        <h1>Crear cuenta</h1>
         <form onSubmit={handleSubmit} className="form">
           <input
             type="email"
-            placeholder="Email"
+            placeholder="Correo electrónico"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
           <input
             type="password"
             placeholder="Contraseña"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
-          {error && <p className="error">{error}</p>}
-          <button type="submit">Registrarse</button>
+          <button type="submit" disabled={isLoading}>
+            {isLoading ? 'Cargando...' : 'Registrarse'}
+          </button>
         </form>
       </div>
 
@@ -72,13 +83,9 @@ export default function RegisterPage() {
           width: 100%;
         }
         h1 {
-          margin-bottom: 8px;
+          margin-bottom: 16px;
           font-size: 2rem;
           color: #047857;
-        }
-        p {
-          margin-bottom: 24px;
-          color: #6b7280;
         }
         .form {
           display: flex;
@@ -90,7 +97,6 @@ export default function RegisterPage() {
           border: 1px solid #d1d5db;
           border-radius: 8px;
           font-size: 1rem;
-          color: black;
         }
         button {
           background: #047857;
@@ -105,10 +111,6 @@ export default function RegisterPage() {
         }
         button:hover {
           background: #065f46;
-        }
-        .error {
-          color: red;
-          font-size: 0.9rem;
         }
       `}</style>
     </div>
