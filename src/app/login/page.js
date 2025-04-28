@@ -19,7 +19,7 @@ export default function LoginPage() {
     const data = await res.json();
     if (res.ok) {
       localStorage.setItem('token', data.token);
-      router.push('/dashboard');
+      router.push('/');
     } else {
       setError(data.error);
     }
@@ -82,7 +82,7 @@ export default function LoginPage() {
         }
         p {
           margin-bottom: 24px;
-          color: #6b7280;
+          color:black;
         }
         .form {
           display: flex;
@@ -94,6 +94,7 @@ export default function LoginPage() {
           border: 1px solid #d1d5db;
           border-radius: 8px;
           font-size: 1rem;
+          color: black;
         }
         button {
           background: #047857;

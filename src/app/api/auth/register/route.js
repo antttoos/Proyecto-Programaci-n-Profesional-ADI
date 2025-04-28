@@ -17,6 +17,6 @@ export async function POST(req) {
 
   const hashed = await hashPassword(password);
   const user   = await User.create({ email, password: hashed });
-  const token  = signToken({ userId: user._id });
+  const token = signToken({ userId: user._id, email: user.email });
   return NextResponse.json({ token }, { status: 201 });
 }

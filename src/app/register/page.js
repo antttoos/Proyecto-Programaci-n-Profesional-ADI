@@ -10,24 +10,29 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
+
     const data = await res.json();
+
     if (res.ok) {
       localStorage.setItem('token', data.token);
-      router.push('/dashboard');
+
+      router.push('/');
     } else {
-      setError(data.error);
+      setError(data.error || 'Registration failed');
     }
   };
 
   return (
     <div className="container">
       <div className="card">
-        <h1>Crear cuenta</h1>
+        <h1>Crear Cuenta</h1>
+        <p>Registrate para saber más en AD AhorraMeds</p>
         <form onSubmit={handleSubmit} className="form">
           <input
             type="email"
@@ -44,7 +49,7 @@ export default function RegisterPage() {
             required
           />
           {error && <p className="error">{error}</p>}
-          <button type="submit">Registrar</button>
+          <button type="submit">Registrarse</button>
         </form>
       </div>
 
@@ -85,6 +90,7 @@ export default function RegisterPage() {
           border: 1px solid #d1d5db;
           border-radius: 8px;
           font-size: 1rem;
+          color: black;
         }
         button {
           background: #047857;

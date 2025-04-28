@@ -13,12 +13,12 @@ export default function ForgotPasswordPage() {
   return (
     <div className="container">
       <div className="card">
-        <h1>Cambiar Contraseña</h1>
+        <h1>Recuperar Contraseña</h1>
         <p>Reescribe tu mail</p>
         <form onSubmit={handleSubmit} className="form">
           <input
             type="email"
-            placeholder="Email address"
+            placeholder="Email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
@@ -65,6 +65,7 @@ export default function ForgotPasswordPage() {
           border: 1px solid #d1d5db;
           border-radius: 8px;
           font-size: 1rem;
+          color: black;
         }
         button {
           background: #047857;
