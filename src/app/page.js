@@ -32,7 +32,6 @@ export default function Home() {
         <button type="submit">Buscar</button>
       </form>
 
-      {/* Hub de funcionalidades */}
       {product && (
         <div className="hub">
           <p className="subtitle">Opciones para “{product}”:</p>

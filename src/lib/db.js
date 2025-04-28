@@ -6,7 +6,6 @@ if (!MONGO_URI) {
   throw new Error('Please define MONGO_URI in .env.local');
 }
 
-// Evitar múltiples conexiones en desarrollo
 let cached = global.mongoose;
 if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
