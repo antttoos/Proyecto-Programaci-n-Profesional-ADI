@@ -3,10 +3,22 @@
 import './globals.css'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 export default function RootLayout({ children }) {
   const [comuna, setComuna] = useState('')
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   return (
     <html lang="es">
@@ -21,6 +33,7 @@ export default function RootLayout({ children }) {
               <h1>AD AhorraMeds</h1>
             </div>
             <div className="actions">
+              {/* Selector de comuna */}
               <div className="action-dropdown">
                 <span className="icon">📍</span>
                 <select
@@ -35,11 +48,36 @@ export default function RootLayout({ children }) {
                 </select>
                 <span className="caret">▾</span>
               </div>
-              <Link href="/login" className="action-button">
-                <span className="icon">👤</span>
-                <span>Iniciar sesión</span>
-                <span className="caret">▾</span>
-              </Link>
+
+              {/* Dropdown de cuenta */}
+              <div className="action-dropdown" ref={menuRef}>
+                <button
+                  className="action-button"
+                  onClick={() => setMenuOpen(open => !open)}
+                >
+                  <span className="icon">👤</span>
+                  <span>Mi cuenta</span>
+                  <span className="caret">▾</span>
+                </button>
+                {menuOpen && (
+                  <div className="dropdown-menu">
+                    <Link
+                      href="/login"
+                      className="dropdown-item"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      Iniciar sesión
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="dropdown-item"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      Registrarse
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </header>
@@ -85,9 +123,6 @@ export default function RootLayout({ children }) {
             font-size: 1.5rem;
             color: #047857;
           }
-          .logo-link {
-            display: inline-block;
-          }
           .actions {
             display: flex;
             align-items: center;
@@ -97,15 +132,6 @@ export default function RootLayout({ children }) {
             position: relative;
             display: flex;
             align-items: center;
-            background: #fff;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            padding: 4px 8px;
-          }
-          .action-dropdown .icon {
-            margin-right: 4px;
-            font-size: 1.2rem;
-            color: #047857;
           }
           .comuna-select {
             border: none;
@@ -115,9 +141,13 @@ export default function RootLayout({ children }) {
             padding-right: 16px;
             appearance: none;
           }
+          .action-dropdown .icon {
+            margin-right: 4px;
+            font-size: 1.2rem;
+            color: #047857;
+          }
           .action-dropdown .caret {
-            position: absolute;
-            right: 6px;
+            margin-left: 4px;
             font-size: 0.75rem;
             color: #6b7280;
           }
@@ -129,19 +159,38 @@ export default function RootLayout({ children }) {
             border: 1px solid #d1d5db;
             border-radius: 4px;
             padding: 4px 8px;
-            text-decoration: none;
-            color: #047857;
-            font-weight: 500;
+            cursor: pointer;
           }
           .action-button:hover {
             background: #f3f4f6;
           }
-          .action-button .icon {
-            font-size: 1.2rem;
+          .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 4px);
+            right: 0;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            min-width: 140px;
+            z-index: 10;
           }
-          .action-button .caret {
-            font-size: 0.75rem;
-            color: #6b7280;
+          .dropdown-item {
+            display: block;
+            padding: 10px 16px;
+            text-decoration: none;
+            color: #1F2937;
+            font-weight: 500;
+            background: #fff;
+          }
+          /* Línea separadora */
+          .dropdown-item:not(:last-child) {
+            border-bottom: 1px solid #e5e7eb;
+          }
+          .dropdown-item:hover {
+            background: #F3F4F6;
           }
           .main {
             flex: 1;
