@@ -1,23 +1,43 @@
 'use client'
-import { useState } from 'react'
-import Link from 'next/link'
+import { useState } from 'react';
+import Link from 'next/link';
 
 export default function Home() {
-  const [query, setQuery] = useState('')
-  const [product, setProduct] = useState('')
+  const [query, setQuery] = useState('');
+  const [product, setProduct] = useState('');
+  const [results, setResults] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const trimmed = query.trim()
-    if (trimmed) setProduct(trimmed)
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const trimmed = query.trim();
+    if (!trimmed) return;
 
-  const features = [
-    { emoji: '🔍', label: 'Comparar precios', href: '/busqueda' },
-    { emoji: '📍', label: 'Farmacias cercanas', href: '/disponibilidad' },
-    { emoji: '🔔', label: 'Crear alerta', href: '/alertas' },
-    { emoji: '🗒️', label: 'Registrar tratamiento', href: '/registros' },
-  ]
+    setProduct(trimmed);
+    setLoading(true);
+    setResults(null);
+
+    try {
+      const res = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: trimmed }),
+      });
+      
+
+      if (!res.ok) {
+        throw new Error(`Error en la solicitud: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setResults(data);
+    } catch (error) {
+      console.error('Error al buscar productos:', error);
+      setResults(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="home">
@@ -32,21 +52,28 @@ export default function Home() {
         <button type="submit">Buscar</button>
       </form>
 
-      {product && (
-        <div className="hub">
-          <p className="subtitle">Opciones para “{product}”:</p>
-          <div className="cards">
-            {features.map((f) => (
-              <Link
-                key={f.href}
-                href={`${f.href}?q=${encodeURIComponent(product)}`}
-                className="card"
-              >
-                <div className="emoji">{f.emoji}</div>
-                <div className="label">{f.label}</div>
-              </Link>
-            ))}
-          </div>
+      {loading && <p>Buscando medicamentos...</p>}
+
+      {results && (
+        <div className="results">
+          <h2>Resultados para "{product}"</h2>
+
+          {Object.entries(results).map(([farmacia, productos]) => (
+            <div key={farmacia}>
+              <h3>{farmacia.toUpperCase()}</h3>
+              <ul>
+                {productos.length > 0 ? (
+                  productos.map((p, index) => (
+                    <li key={index}>
+                      <strong>{p.nombre}</strong> — {p.precio}
+                    </li>
+                  ))
+                ) : (
+                  <li>No se encontraron productos.</li>
+                )}
+              </ul>
+            </div>
+          ))}
         </div>
       )}
 
@@ -73,50 +100,20 @@ export default function Home() {
           cursor: pointer;
           font-weight: 500;
         }
-        .searchForm button:hover {
-          background: #065f46;
-        }
-        .hub {
+        .results {
           margin-top: 32px;
-          text-align: center;
-        }
-        .subtitle {
-          margin-bottom: 16px;
-          font-size: 1.125rem;
-          color: #374151;
-        }
-        .cards {
-          display: grid;
-          gap: 24px;
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
           max-width: 800px;
-          margin: 0 auto;
-        }
-        .card {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 24px;
+          margin: 32px auto;
           background: white;
-          border: 1px solid #e5e7eb;
-          border-radius: 12px;
-          text-decoration: none;
-          color: #1f2937;
-          transition: box-shadow 0.2s, border-color 0.2s;
-        }
-        .card:hover {
+          padding: 24px;
+          border-radius: 8px;
           box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-          border-color: #3b82f6;
         }
-        .emoji {
-          font-size: 2.5rem;
-          margin-bottom: 12px;
-        }
-        .label {
-          font-weight: 600;
-          text-align: center;
+        .results h3 {
+          margin-top: 24px;
+          color: #047857;
         }
       `}</style>
     </div>
-  )
+  );
 }
