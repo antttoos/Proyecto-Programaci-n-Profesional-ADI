@@ -1,10 +1,10 @@
 "use client"
 import Header from '@/components/Header';
+import { ComunaProvider } from '@/context/ComunaContext';
 
 export default function DashboardLayout({ children }) {
-
   return (
-    <>
+    <ComunaProvider>
       <Header />
       <div className='dashboard'>
         <main className="main">
@@ -57,6 +57,6 @@ export default function DashboardLayout({ children }) {
           padding: 24px;
         }
       `}</style>
-    </>
+    </ComunaProvider>
   );
 }

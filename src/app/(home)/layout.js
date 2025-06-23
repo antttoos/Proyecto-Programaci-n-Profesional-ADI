@@ -1,10 +1,11 @@
 'use client';
 import '../globals.css';
 import Header from '@/components/Header';
+import { ComunaProvider } from '@/context/ComunaContext';
 
 export default function HomeLayout({ children }) {
   return (
-    <>
+    <ComunaProvider>
       <Header/>
 
       <main className="main">{children}</main>
@@ -39,6 +40,6 @@ export default function HomeLayout({ children }) {
           font-size: 0.875rem;
         }
       `}</style>
-    </>
+    </ComunaProvider>
   );
 }
