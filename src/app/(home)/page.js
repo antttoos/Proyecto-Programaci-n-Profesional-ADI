@@ -61,17 +61,21 @@ export default function Home() {
           {Object.entries(results).map(([farmacia, productos]) => (
             <div key={farmacia}>
               <h3>{farmacia.toUpperCase()}</h3>
-              <ul>
-                {productos.length > 0 ? (
-                  productos.map((p, index) => (
-                    <li key={index}>
-                      <strong>{p.nombre}</strong> — {p.precio}
-                    </li>
-                  ))
-                ) : (
-                  <li>No se encontraron productos.</li>
-                )}
-              </ul>
+                <ul>
+                  {productos.length > 0 ? (
+                    productos.map((p, index) => (
+                      <li key={index}>
+                        <strong>{p.nombre}</strong>
+                        {' — '}
+                        {p.precioOferta && p.precioNormal
+                          ? (<><span style={{ textDecoration: 'line-through', color: '#888' }}>{p.precioNormal}</span> <span style={{ color: 'green', fontWeight: 'bold' }}>{p.precioOferta}</span></>)
+                          : (p.precioOferta || p.precioNormal || 'Precio no disponible')}
+                      </li>
+                    ))
+                  ) : (
+                    <li>No se encontraron productos.</li>
+                  )}
+                </ul>
             </div>
           ))}
         </div>
