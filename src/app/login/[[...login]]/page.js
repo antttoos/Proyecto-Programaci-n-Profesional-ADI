@@ -1,12 +1,16 @@
 "use client"
-import { SignIn } from '@clerk/nextjs'
+import { SignIn, SignUp } from '@clerk/nextjs'
 
 export default function Login() {
   return(
     <>
       <div className='container'>
         <h1 className='title'>Iniciar Sesión</h1>
-        <SignIn/>
+        <SignIn afterSignInUrl="/dashboard" afterSignUpUrl="/dashboard"/>
+        <div style={{ marginTop: 24 }}>
+          <h2 className='title'>¿No tienes cuenta?</h2>
+          <SignUp afterSignInUrl="/dashboard" afterSignUpUrl="/dashboard"/>
+        </div>
       </div>
       <style jsx>
         {`    

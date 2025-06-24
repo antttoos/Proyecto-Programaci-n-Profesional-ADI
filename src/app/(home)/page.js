@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useComuna } from '@/context/ComunaContext'; // <-- NUEVO
 import BuscarFarmacias from '@/components/BuscarFarmacias'; // <-- NUEVO
@@ -12,7 +12,15 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [disponibilidad, setDisponibilidad] = useState(null);
   const [loadingDisp, setLoadingDisp] = useState(false);
+  // Confirmación visual simple
+  const [toast, setToast] = useState(null);
 
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -73,6 +81,33 @@ export default function Home() {
     }
   };
 
+  // Guardar en localStorage
+  function agregarATratamiento(med) {
+    let tratamientos = JSON.parse(localStorage.getItem('tratamientos') || '[]');
+    tratamientos.push({
+      nombre: med.nombre,
+      dosis: med.dosis || '',
+      frecuencia: '',
+      ultimaCompra: '',
+      precioActual: med.precioOferta ? Number(med.precioOferta.replace(/[^\d]/g, '')) : 0,
+      precioAnterior: med.precioNormal ? Number(med.precioNormal.replace(/[^\d]/g, '')) : 0,
+      farmacia: med.farmacia || '',
+      tendencia: '',
+    });
+    localStorage.setItem('tratamientos', JSON.stringify(tratamientos));
+    setToast('¡Agregado a tu tratamiento!');
+  }
+  function agregarAFavoritos(med) {
+    let favoritos = JSON.parse(localStorage.getItem('favoritos') || '[]');
+    favoritos.push({
+      nombre: med.nombre,
+      precio: med.precioOferta || med.precioNormal || '',
+      farmacia: med.farmacia || '',
+    });
+    localStorage.setItem('favoritos', JSON.stringify(favoritos));
+    setToast('¡Marcado como favorito!');
+  }
+
   return (
     <div className="home">
       <main className="landing-container">
@@ -95,32 +130,42 @@ export default function Home() {
 
       {results && (
         <div className="results">
-          <h2>Resultados para &quot;{product}&quot;</h2>
+          <h2>Resultados para "{product}"</h2>
           {Object.entries(results).map(([farmacia, productos]) => (
             <div key={farmacia}>
               <h3>{farmacia.toUpperCase()}</h3>
-                <ul>
-                  {productos.length > 0 ? (
-                    productos.map((p, index) => (
-                      <li key={index}>
-                        <strong>{p.nombre}</strong>
-                        {' — '}
-                        {p.precioOferta && p.precioNormal
-                          ? (<><span style={{ textDecoration: 'line-through', color: '#888' }}>{p.precioNormal}</span> <span style={{ color: 'green', fontWeight: 'bold' }}>{p.precioOferta}</span></>)
-                          : (p.precioOferta || p.precioNormal || 'Precio no disponible')}
-                      </li>
-                    ))
-                  ) : (
-                    <li>No se encontraron productos.</li>
-                  )}
-                </ul>
-                <button
-                  style={{ marginTop: 8, marginBottom: 16 }}
-                  onClick={() => consultarDisponibilidad(farmacia)}
-                  disabled={!comuna || loadingDisp}
-                >
-                  {loadingDisp ? 'Consultando...' : 'Ver disponibilidad en mi comuna'}
-                </button>
+              <div className="productos-grid">
+                {productos.length > 0 ? (
+                  productos.map((p, index) => (
+                    <div className="producto-card" key={index}>
+                      <div className="producto-header">
+                        <strong className="producto-nombre">{p.nombre}</strong>
+                        <button className="fav-btn" title="Agregar a favoritos" onClick={() => agregarAFavoritos({ ...p, farmacia })}>
+                          <span role="img" aria-label="Favorito">💚</span>
+                        </button>
+                      </div>
+                      <div className="producto-precios">
+                        {p.precioOferta && p.precioNormal ? (
+                          <>
+                            <span className="precio-normal">{p.precioNormal}</span>
+                            <span className="precio-oferta">{p.precioOferta}</span>
+                          </>
+                        ) : (
+                          <span className="precio-oferta">{p.precioOferta || p.precioNormal || 'Precio no disponible'}</span>
+                        )}
+                      </div>
+                      <div className="producto-acciones">
+                        <button className="add-trat-btn" onClick={() => agregarATratamiento({ ...p, farmacia })}>Agregar a tratamiento</button>
+                        <button className="ver-disponibilidad" onClick={() => consultarDisponibilidad(farmacia)} disabled={!comuna || loadingDisp}>
+                          {loadingDisp ? 'Consultando...' : 'Ver disponibilidad'}
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="info-vacio">No se encontraron productos.</div>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -172,9 +217,9 @@ export default function Home() {
           </div>
         </section>
       </main>
-
-
-
+      {toast && (
+        <div className="toast-confirm">{toast}</div>
+      )}
       <style jsx>{`
         .landing-container {
           max-width: 700px;
@@ -297,6 +342,126 @@ export default function Home() {
         .results h3 {
           margin-top: 24px;
           color: #047857;
+        }
+        .productos-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 18px;
+          margin-top: 12px;
+          justify-content: flex-start;
+        }
+        .producto-card {
+          background: #f3fdf7;
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(16,185,129,0.07);
+          padding: 18px 16px 14px 16px;
+          min-width: 220px;
+          max-width: 260px;
+          flex: 1 1 220px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          align-items: flex-start;
+        }
+        .producto-header {
+          display: flex;
+          width: 100%;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .producto-nombre {
+          font-size: 1.08rem;
+          color: #047857;
+          font-weight: 600;
+        }
+        .fav-btn {
+          background: none;
+          border: none;
+          font-size: 1.3rem;
+          cursor: pointer;
+          color: #10b981;
+          transition: color 0.2s;
+        }
+        .fav-btn:hover {
+          color: #047857;
+        }
+        .producto-precios {
+          display: flex;
+          gap: 10px;
+          align-items: baseline;
+        }
+        .precio-normal {
+          text-decoration: line-through;
+          color: #888;
+          font-size: 1rem;
+        }
+        .precio-oferta {
+          color: #059669;
+          font-size: 1.1rem;
+          font-weight: 700;
+        }
+        .producto-acciones {
+          display: flex;
+          gap: 8px;
+          margin-top: 8px;
+        }
+        .add-trat-btn {
+          background: #10b981;
+          color: white;
+          border: none;
+          border-radius: 9999px;
+          padding: 7px 16px;
+          font-size: 0.98rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .add-trat-btn:hover {
+          background: #047857;
+        }
+        .ver-disponibilidad {
+          background: #e6f9f2;
+          color: #047857;
+          border: 1px solid #10b981;
+          border-radius: 9999px;
+          padding: 7px 16px;
+          font-size: 0.98rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .ver-disponibilidad:disabled {
+          background: #f3f4f6;
+          color: #aaa;
+          border: 1px solid #ccc;
+          cursor: not-allowed;
+        }
+        .toast-confirm {
+          position: fixed;
+          top: 24px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #10b981;
+          color: white;
+          padding: 14px 32px;
+          border-radius: 9999px;
+          font-size: 1.1rem;
+          font-weight: 600;
+          box-shadow: 0 2px 8px rgba(16,185,129,0.15);
+          z-index: 9999;
+          animation: fadeInOut 2s;
+        }
+        @keyframes fadeInOut {
+          0% { opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        @media (max-width: 700px) {
+          .productos-grid {
+            flex-direction: column;
+            gap: 12px;
+          }
         }
       `}</style>
     </div>
