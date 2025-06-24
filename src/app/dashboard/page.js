@@ -60,10 +60,26 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-main">
+      <div className="dashboard-header-accesos">
+        <a href="/mis-medicamentos" className="acceso-btn-header">
+          <span role="img" aria-label="Mis medicamentos">💊</span>
+          <span>Mis medicamentos</span>
+        </a>
+        <a href="/perfil" className="acceso-btn-header">
+          <span role="img" aria-label="Perfil">👤</span>
+          <span>Perfil</span>
+        </a>
+      </div>
       <section className="bienvenida">
         <h2 className="saludo">¡Hola, {nombre}!</h2>
         <p className="mensaje">Bienvenida de nuevo a <b>AD AhorraMeds</b></p>
       </section>
+      <div className="acceso-buscar-container">
+        <a href="/" className="acceso-btn-buscar">
+          <span role="img" aria-label="Buscar">🔍</span>
+          <span>Buscar medicamento</span>
+        </a>
+      </div>
 
       <section className="top-ahorro">
         <h3>Top Ahorro</h3>
@@ -141,24 +157,6 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <section className="accesos-rapidos">
-        <h3>Accesos rápidos</h3>
-        <div className="accesos-list">
-          <a href="/" className="acceso-btn">
-            <span role="img" aria-label="Buscar">🔍</span>
-            <span>Buscar medicamento</span>
-          </a>
-          <a href="/mis-medicamentos" className="acceso-btn">
-            <span role="img" aria-label="Mis medicamentos">💊</span>
-            <span>Mis medicamentos</span>
-          </a>
-          <a href="/perfil" className="acceso-btn">
-            <span role="img" aria-label="Perfil">👤</span>
-            <span>Perfil</span>
-          </a>
-        </div>
-      </section>
-
       <style jsx>{`
         .dashboard-main {
           max-width: 900px;
@@ -167,6 +165,56 @@ export default function Dashboard() {
           display: flex;
           flex-direction: column;
           gap: 32px;
+        }
+        .dashboard-header-accesos {
+          display: flex;
+          gap: 18px;
+          justify-content: flex-end;
+          margin-bottom: 8px;
+        }
+        .acceso-btn-header {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: #10b981;
+          color: white;
+          border: none;
+          border-radius: 12px;
+          padding: 10px 18px;
+          font-size: 1rem;
+          font-weight: 600;
+          text-decoration: none;
+          box-shadow: 0 1px 4px rgba(4,120,87,0.07);
+          transition: background 0.2s;
+        }
+        .acceso-btn-header:hover {
+          background: #059669;
+        }
+        .acceso-buscar-container {
+          display: flex;
+          justify-content: center;
+          margin: 18px 0 0 0;
+        }
+        .acceso-btn-buscar {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: #10b981;
+          color: white;
+          border: none;
+          border-radius: 12px;
+          padding: 18px 24px;
+          font-size: 1.1rem;
+          font-weight: 600;
+          min-width: 160px;
+          min-height: 90px;
+          text-decoration: none;
+          box-shadow: 0 1px 4px rgba(4,120,87,0.07);
+          transition: background 0.2s;
+        }
+        .acceso-btn-buscar:hover {
+          background: #059669;
         }
         .bienvenida {
           background: #e6f9f2;
@@ -381,49 +429,6 @@ export default function Dashboard() {
           color: #047857;
           min-width: 160px;
           box-shadow: 0 1px 4px rgba(4,120,87,0.07);
-        }
-        .accesos-rapidos {
-          background: #e6f9f2;
-          border-radius: 12px;
-          padding: 18px 16px;
-        }
-        .accesos-list {
-          display: flex;
-          gap: 18px;
-          flex-wrap: wrap;
-          justify-content: center;
-          margin-top: 10px;
-        }
-        .acceso-btn {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          background: #10b981;
-          color: white;
-          border: none;
-          border-radius: 12px;
-          padding: 18px 24px;
-          font-size: 1.1rem;
-          font-weight: 600;
-          min-width: 160px;
-          min-height: 90px;
-          text-decoration: none;
-          box-shadow: 0 1px 4px rgba(4,120,87,0.07);
-          transition: background 0.2s;
-        }
-        .acceso-btn:hover {
-          background: #059669;
-        }
-        @media (max-width: 700px) {
-          .dashboard-main {
-            padding: 12px 2px 32px 2px;
-            gap: 20px;
-          }
-          .favoritos-list, .accesos-list, .tratamientos-list {
-            flex-direction: column;
-            gap: 12px;
-          }
         }
       `}</style>
     </div>
