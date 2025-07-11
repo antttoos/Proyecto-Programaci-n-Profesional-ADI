@@ -28,20 +28,48 @@ export default function Dashboard() {
     localStorage.setItem('tratamientos', JSON.stringify(nuevos));
   }
 
-  function agregarTratamiento() {
-    setTratamientos([
-      ...tratamientos,
-      {
-        nombre: "Nuevo Medicamento",
-        dosis: "500 mg",
-        frecuencia: "cada 30 días",
-        ultimaCompra: "2025-06-10",
-        precioActual: 999,
-        precioAnterior: 1200,
-        farmacia: "Ahumada",
-        tendencia: "baja",
-      },
-    ]);
+  function agregarTratamiento(med) {
+    // med: { nombre, dosis, precioOferta, precioNormal, farmacia }
+    const tratamientosGuardados = JSON.parse(localStorage.getItem('tratamientos') || '[]');
+    const idx = tratamientosGuardados.findIndex(t => t.nombre === med.nombre);
+    let nuevoTratamientos;
+    if (idx === -1) {
+      // Primer registro, historial solo con precio actual
+      nuevoTratamientos = [
+        ...tratamientosGuardados,
+        {
+          nombre: med.nombre,
+          dosis: med.dosis || '',
+          frecuencia: '',
+          ultimaCompra: '',
+          farmacia: med.farmacia || '',
+          historialPrecios: [med.precioOferta ? Number(med.precioOferta.replace(/[^\d]/g, '')) : 0],
+          tendencia: '', // No hay tendencia en el primer registro
+        }
+      ];
+    } else {
+      // Ya existe, actualiza historial y tendencia
+      const tratamiento = tratamientosGuardados[idx];
+      const precioActual = med.precioOferta ? Number(med.precioOferta.replace(/[^\d]/g, '')) : 0;
+      const historial = [...(tratamiento.historialPrecios || []), precioActual];
+      let tendencia = '';
+      if (historial.length > 1) {
+        const prev = historial[historial.length - 2];
+        if (precioActual < prev) tendencia = 'baja';
+        else if (precioActual > prev) tendencia = 'sube';
+        else tendencia = 'estable';
+      }
+      nuevoTratamientos = [...tratamientosGuardados];
+      nuevoTratamientos[idx] = {
+        ...tratamiento,
+        historialPrecios: historial,
+        tendencia,
+        farmacia: med.farmacia || tratamiento.farmacia,
+        dosis: med.dosis || tratamiento.dosis,
+      };
+    }
+    setTratamientos(nuevoTratamientos);
+    localStorage.setItem('tratamientos', JSON.stringify(nuevoTratamientos));
   }
 
   function eliminarFavorito(idx) {

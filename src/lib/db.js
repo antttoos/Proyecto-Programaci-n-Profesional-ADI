@@ -11,20 +11,12 @@ if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
 
+const MONGODB_URI = "mongodb+srv://antoniasoliscc:4p4IuL5atCGLcq90@cluster0.mbzwww1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
 export async function connectDB() {
-  if (cached.conn) return cached.conn;
-  if (!cached.promise) {
-    cached.promise = mongoose
-      .connect(MONGO_URI)
-      .then((mongoose) => {
-        console.log('🔌 MongoDB connected');
-        return mongoose;
-      })
-      .catch((err) => {
-        console.error('❌ MongoDB connection error:', err);
-        throw err;
-      });
-  }
-  cached.conn = await cached.promise;
-  return cached.conn;
+  if (mongoose.connection.readyState >= 1) return;
+  return mongoose.connect(MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
 }
