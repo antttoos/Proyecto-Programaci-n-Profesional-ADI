@@ -1,18 +1,18 @@
 'use client'
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useComuna } from '@/context/ComunaContext'; // <-- NUEVO
-import BuscarFarmacias from '@/components/BuscarFarmacias'; // <-- NUEVO
+import { useComuna } from '@/context/ComunaContext';
+import dynamic from 'next/dynamic';
+const BuscarFarmacias = dynamic(() => import('@/components/BuscarFarmacias'), { ssr: false });
 
 export default function Home() {
-  const { comuna } = useComuna(); // <-- NUEVO
+  const { comuna } = useComuna();
   const [query, setQuery] = useState('');
   const [product, setProduct] = useState('');
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [disponibilidad, setDisponibilidad] = useState(null);
   const [loadingDisp, setLoadingDisp] = useState(false);
-  // Confirmación visual simple
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function Home() {
     setProduct(trimmed);
     setLoading(true);
     setResults(null);
-    setDisponibilidad(null); // Limpiar disponibilidad al buscar nuevo producto
+    setDisponibilidad(null);
 
     try {
       const res = await fetch('/api/scrape', {
@@ -53,7 +53,6 @@ export default function Home() {
     }
   };
 
-  // NUEVO: Función para consultar disponibilidad
   const consultarDisponibilidad = async (farmacia) => {
     if (!comuna) {
       alert('Selecciona una comuna');
@@ -65,11 +64,7 @@ export default function Home() {
       const res = await fetch('/api/disponibilidad', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          farmacia,
-          medicamento: product,
-          comuna
-        }),
+        body: JSON.stringify({ farmacia, medicamento: product, comuna }),
       });
       const data = await res.json();
       setDisponibilidad(data);
@@ -81,7 +76,6 @@ export default function Home() {
     }
   };
 
-  // Guardar en localStorage
   function agregarATratamiento(med) {
     let tratamientos = JSON.parse(localStorage.getItem('tratamientos') || '[]');
     tratamientos.push({
@@ -126,60 +120,59 @@ export default function Home() {
           />
           <button type="submit">Buscar</button>
         </form>
-              {loading && <p>Buscando medicamentos...</p>}
-
-      {results && (
-        <div className="results">
-          <h2>Resultados para "{product}"</h2>
-          {Object.entries(results).map(([farmacia, productos]) => (
-            <div key={farmacia}>
-              <h3>{farmacia.toUpperCase()}</h3>
-              <div className="productos-grid">
-                {productos.length > 0 ? (
-                  productos.map((p, index) => (
-                    <div className="producto-card" key={index}>
-                      <div className="producto-header">
-                        <strong className="producto-nombre">{p.nombre}</strong>
-                        <button className="fav-btn" title="Agregar a favoritos" onClick={() => agregarAFavoritos({ ...p, farmacia })}>
-                          <span role="img" aria-label="Favorito">💚</span>
-                        </button>
+        {loading && <p>Buscando medicamentos...</p>}
+        {results && (
+          <div className="results">
+            <h2>Resultados para "{product}"</h2>
+            {Object.entries(results).map(([farmacia, productos]) => (
+              <div key={farmacia}>
+                <h3>{farmacia.toUpperCase()}</h3>
+                <div className="productos-grid">
+                  {productos.length > 0 ? (
+                    productos.map((p, index) => (
+                      <div className="producto-card" key={index}>
+                        <div className="producto-header">
+                          <strong className="producto-nombre">{p.nombre}</strong>
+                          <button className="fav-btn" title="Agregar a favoritos" onClick={() => agregarAFavoritos({ ...p, farmacia })}>
+                            <span role="img" aria-label="Favorito">💚</span>
+                          </button>
+                        </div>
+                        <div className="producto-precios">
+                          {p.precioOferta && p.precioNormal ? (
+                            <>
+                              <span className="precio-normal">{p.precioNormal}</span>
+                              <span className="precio-oferta">{p.precioOferta}</span>
+                            </>
+                          ) : (
+                            <span className="precio-oferta">{p.precioOferta || p.precioNormal || 'Precio no disponible'}</span>
+                          )}
+                        </div>
+                        <div className="producto-acciones">
+                          <button className="add-trat-btn" onClick={() => agregarATratamiento({ ...p, farmacia })}>Agregar a tratamiento</button>
+                          <button className="ver-disponibilidad" onClick={() => consultarDisponibilidad(farmacia)} disabled={!comuna || loadingDisp}>
+                            {loadingDisp ? 'Consultando...' : 'Ver disponibilidad'}
+                          </button>
+                        </div>
                       </div>
-                      <div className="producto-precios">
-                        {p.precioOferta && p.precioNormal ? (
-                          <>
-                            <span className="precio-normal">{p.precioNormal}</span>
-                            <span className="precio-oferta">{p.precioOferta}</span>
-                          </>
-                        ) : (
-                          <span className="precio-oferta">{p.precioOferta || p.precioNormal || 'Precio no disponible'}</span>
-                        )}
-                      </div>
-                      <div className="producto-acciones">
-                        <button className="add-trat-btn" onClick={() => agregarATratamiento({ ...p, farmacia })}>Agregar a tratamiento</button>
-                        <button className="ver-disponibilidad" onClick={() => consultarDisponibilidad(farmacia)} disabled={!comuna || loadingDisp}>
-                          {loadingDisp ? 'Consultando...' : 'Ver disponibilidad'}
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="info-vacio">No se encontraron productos.</div>
-                )}
+                    ))
+                  ) : (
+                    <div className="info-vacio">No se encontraron productos.</div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-            {disponibilidad && (
-      <>
-        <BuscarFarmacias
-          comuna={disponibilidad.comuna}
-          region={disponibilidad.region || ''}
-          farmacia={disponibilidad.farmacia}
-          mostrarResumen={true}
-        />
-      </>
-    )}
+            ))}
+          </div>
+        )}
+        {disponibilidad && (
+          <>
+            <BuscarFarmacias
+              comuna={disponibilidad.comuna}
+              region={disponibilidad.region || ''}
+              farmacia={disponibilidad.farmacia}
+              mostrarResumen={true}
+            />
+          </>
+        )}
         <div className="landing-stats">
           <div>
             <span className="stat-main">+5,000</span>
